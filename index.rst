@@ -11,6 +11,7 @@ Welcome to cse138-notes's documentation!
    :caption: Contents:
 
    intro
+   time
 
 
 Indices and tables
