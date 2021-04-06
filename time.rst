@@ -66,6 +66,8 @@ If we can't be sure that given a pair of events, one happens before the other, t
 .. image:: _static/time5.png
     :width: 500
 
+:math:`R || T`
+
 We can use logical clocks to counteract causal anomalies like this, caused by unbounded latency:
 
 .. image:: _static/time4.png
@@ -101,3 +103,75 @@ We can determine the current state by looking at the sequence of events leading 
 
 However, we can't do the opposite.
 
+Partial Order
+-------------
+Let's take a brief detour to talk about partial orders.
+
+Partial orders are:
+
+- a set S
+- a binary relation, often written ≤, that lets you compare elements of S, and has the following properties:
+    - reflexive: :math:`\forall a \in S, a \leq a`
+    - antisymmetry: :math:`\forall a, b \in S, a \leq b \land b \leq a \implies a = b`
+    - transitivity: :math:`\forall a, b, c \in S, a \leq b \land b \leq c \implies a \leq c`
+
+The "happens-before" relation is *not* a partial order! Considering a set of events, transivity holds and antisymmetry
+holds (vacuously), but events are not reflexive!
+
+.. note::
+    An actual partial order is set containment:
+
+    .. image:: _static/time7.png
+        :width: 400
+
+Note that in a partial order, some elements of S may not be comparable (in the example above, {A} and {B} are not
+related). If all elements in S are comparable, it's called a *total order* (e.g. natural numbers).
+
+Lamport Clocks
+--------------
+*a type of logical clock*
+
+:math:`LC(A)` - the Lamport clock of event *A*.
+
+.. data:: clock condition
+
+    if :math:`A \to B`, then :math:`LC(A) < LC(B)`.
+
+How do we assign Lamport clocks to events?
+
+1. every process keeps a counter initialized to 0
+2. on every event on a process, increment process' counter by 1
+3. when you send a message, include the current counter with the message
+4. when you receive a message, set counter to max(local, recv) + 1
+
+.. image:: _static/time8.png
+    :width: 400
+
+.. important::
+
+    The converse is not necessarily true (i.e. :math:`LC(A) < LC(B) \lnot \implies A \to B`).
+
+    .. image:: _static/time9.png
+        :width: 400
+
+    Even though :math:`LC(A) < LC(B)`, there is no path from *A* to *B* - so there is no guarantee that :math:`A \to B`.
+
+    Specifically, while Lamport clocks are *consistent* with causality, they do not *characterize* causaility.
+
+    We can use it for it's contrapositive, though! (:math:`\lnot LC(A) < LC(B) \implies \lnot A \to B` 
+    - either :math:`B \to A` or :math:`A || B`)
+
+Vector Clocks
+-------------
+While Lamport clocks don't character causaility, vector clocks do!
+
+:math:`A \to B \iff VC(A) < VC(B)`
+
+1. Every process keeps a vector of integers initialized to 0 (size = # of processes)
+2. On every event (including receive), a process increments its own position in its vector
+3. When sending a message, a process includes its current vector clock
+4. When receiving a message, a process updates its vector clock to max(local, recv) (element-wise) and increments its
+   position
+
+.. note::
+    max() is element-wise: e.g. max([1, 12, 4], [7, 0, 2]) = [7, 12, 4]
