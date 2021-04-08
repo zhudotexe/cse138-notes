@@ -175,3 +175,19 @@ While Lamport clocks don't character causaility, vector clocks do!
 
 .. note::
     max() is element-wise: e.g. max([1, 12, 4], [7, 0, 2]) = [7, 12, 4]
+
+.. image:: _static/time10.png
+    :width: 500
+
+Now, say we wanted to find all events that happened before some event *A* (its causal history):
+
+.. image:: _static/time11.png
+    :width: 500
+
+Notice that all vector clocks of events in A's causal history are less than or equal to A's VC!
+(Similarly, all events that happen after A have VCs greater than or equal to A's VC.)
+
+Any events that do not satisfy either of these are concurrent with/causally independent of A.
+(In the example above, some examples are ``[0, 3, 3]`` and ``[3, 3, 3]``).
+
+.. note that images go to protocol here, up to time15

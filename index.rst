@@ -12,6 +12,7 @@ Welcome to cse138-notes's documentation!
 
    intro
    time
+   protocol
 
 
 Indices and tables
