@@ -22,6 +22,9 @@ a violation of the protocol:
 
 The following are three different correctness properties of executions:
 
+.. image:: _static/protocol3.png
+    :width: 500
+
 FIFO Delivery
 -------------
 if a process sends message :math:`m_2` after message :math:`m_1`, any process *delivering* both
@@ -80,6 +83,55 @@ sent from a single process.
     :width: 250
 
 It is a violation of *causal delivery*, though.
+
+Implementing Causal Broadcast
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+.. data:: unicast
+
+    1 sender, 1 receiver (aka point-to-point)
+
+.. data:: multicast
+
+    1 sender, many receivers
+
+.. data:: broadcast
+
+    1 sender, *all* processes in the system receive
+
+For all of these above, no matter how many receivers there are, each send is considered one message.
+
+First, we'll examine the **vector clocks algorithm** with a twist: *message receives don't count as events*.
+
+- Every process keeps a VC, initially 0's
+- When a process sends a message, it increments its own position in the VC, and includes the updated VC with the
+  message
+- When a process *delivers* a message, it updates its VC to the pointwise maximum of its local VC and the message's
+
+.. data:: causal delivery
+
+    the property of executions that we care about today
+
+.. data:: causal broadcast
+
+    an algorithm that gives you causal delivery in a setting where all messages are broadcast messages
+
+We want to define a deliverability condition that tells us whether or not a received message is os is not OK to deliver.
+This deliverability condition will use the vector clock on the message.
+
+.. data:: deliverability
+
+    a message *m* is deliverable at a process *p* if:
+
+    - :math:`VC(m)[k] = VC(p)[k] + 1`, where *k* is the sender's position
+    - :math:`VC(m)[k] \leq VC(p)[k]`, for every other *k*
+
+If a message is not deliverable, add it to the delivery queue, and check for deliverability each time you receive
+a new message (update your VC).
+
+.. image:: _static/protocol4.png
+    :width: 500
+
 
 Totally Ordered Delivery
 ------------------------
