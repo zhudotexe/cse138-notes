@@ -14,6 +14,7 @@ Welcome to cse138-notes's documentation!
    time
    protocol
    snapshot
+   safety
 
 
 Indices and tables

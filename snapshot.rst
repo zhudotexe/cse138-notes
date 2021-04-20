@@ -25,7 +25,9 @@ Chandy-Lamport Algorithm
     .. image:: _static/snapshot2.png
         :width: 250
 
-    :math:`m_2` is *in* :math:`C_{21}`, :math:`C_{21}=[m_2, m_3]`
+    :math:`m_2` is *in* :math:`C_{21}`, :math:`C_{21}=[m_2, m_3]` (in-transit)
+
+Note that a process graph must be *strongly connected* for C-L to work.
 
 Some examples of snapshots:
 
