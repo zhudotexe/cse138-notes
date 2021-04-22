@@ -33,7 +33,7 @@ In fact, every property is either a safety property, a liveness property, or bot
 Let's try and define reliable delivery:
 
 (Take 1): Let :math:`P_1` be a process that sends a message to process :math:`P_2`. If neither :math:`P_1` not
-:math:`P_2` crashes, then :math:`P_2` eventually delivers *m*.
+:math:`P_2` crashes (and not all messages are lost), then :math:`P_2` eventually delivers *m*.
 
 Well, it's a start, but the whole "not crashing" thing is weak.
 
@@ -67,6 +67,10 @@ other for a value, we have the following faults:
 .. data:: Byzantine fault
 
     a process behaves in an arbitrary or malicious way
+
+    .. note::
+        There's a subset of Byzantine faults between omission and Byzantine called "authentication-detectable Byzantine
+        faults" - i.e. message corruptions that can be detected, and "downgraded" to an omission fault
 
 If protocol X tolerates crash faults and protocol Y tolerates omission faults, does Y also tolerate crash faults?
 
@@ -108,3 +112,102 @@ Common Knowledge
 ^^^^^^^^^^^^^^^^
 There is common knowledge of *p* when everyone knows *p*, everyone knows that everyone knows *p*, everyone knows that
 everyone knows that everyone knows *p*...
+
+Fault Tolerance
+---------------
+What does it mean to tolerate a class of faults? Usually it's defined by how/how much your program reacts to a fault.
+
+A *correct* program satisfies both its safety and liveness properties, but often satisfying both is impossible
+during a fault.
+
+So really, it's about *how wrong* it goes in the presence of a fault.
+
++--------------+-------------+-----------+
+|              | live        | not live  |
++==============+=============+===========+
+| **safe**     | masking     | fail-safe |
++--------------+-------------+-----------+
+| **not safe** | non-masking | :(        |
++--------------+-------------+-----------+
+
+Reliable Delivery, Take 2
+-------------------------
+Previously: Let :math:`P_1` be a process that sends a message *m* to :math:`P_2`. If neither :math:`P_1` nor :math:`P_2`
+crashes (and not all messages are lost), then :math:`P_2` eventually delivers *m*.
+
+Do we need ``not all messages are lost``? Yes, if we're working under the omission model.
+
+So how do we implement it?
+
+One implementation: repeat until ack
+
+- Alice puts a message in the send buffer
+- on timeout, send what's in the buffer
+- when ack received, delete message from buffer
+
+.. image:: _static/safety3.png
+    :width: 300
+
+One problem is if Bob's ACK gets dropped, and he receives the message twice. This may or may not be an issue, depending
+on the message. For example, if the message is something like "increase value by 1", that's an issue!
+
+.. note::
+    Client A sending a set request, then client B, then a repeated send of client A is not actually an issue here -
+    it's the same if client A's initial message was delayed (one client will be sad).
+
+In this scenario, your messages should be *idempotent* - sending them multiple times should have the same effect
+as if it was sent once.
+
+So this is actually *at-least-once* delivery! But is *exactly-once* delivery possible?
+
+Not really... most systems that claim exactly-once delivery in real life are one of the following:
+
+- the messages were idempotent anyway
+- they're making an effort to deduplicate messages on the receiver
+
+Reliable Broadcast
+------------------
+*broadcast*: one sender, everyone receives
+
+.. image:: _static/safety4.png
+    :width: 500
+
+.. note::
+    If you have a *unicast* primitive, you can implement broadcast by sending multiple unicasts in very quick
+    succession.
+
+.. data:: reliable broadcast
+
+    If a *correct process* delivers a broadcast message *m*, then all correct processes deliver *m*.
+
+    .. note::
+        A correct process is a process that is acting correctly in a given fault model (e.g. not crashed in crash
+        model).
+
+**Ex**. If Alice sends a message to Bob and Carol in the crash model, Bob delivers it, but Carol crashes before she can,
+reliable broadcast is not violated because Carol is not correct.
+
+**Ex**. If Alice is sending a message to Bob and Carol in the crash model but crashes after Bob's is sent but before
+Carol's is, reliable broadcast is violated, since Bob is a correct process that delivered the message, but Carol did
+not.
+
+.. image:: _static/safety5.png
+    :width: 500
+
+If a process can crash in the middle of a broadcast, how do we get reliable broadcast?
+
+If you receive a broadcast message, forward it to everyone else (or, at least, everyone but the sender) before
+delivering it:
+
+.. image:: _static/safety6.png
+    :width: 400
+
+But if no one crashes, each process receives it twice:
+
+.. image:: _static/safety7.png
+    :width: 400
+
+But each process can keep track of messages they've already delivered/forwarded to not do it twice.
+
+.. important::
+    Fault tolerance often involves making copies!
