@@ -15,6 +15,7 @@ Welcome to cse138-notes's documentation!
    protocol
    snapshot
    safety
+   replication
 
 
 Indices and tables

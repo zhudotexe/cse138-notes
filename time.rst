@@ -116,7 +116,7 @@ Partial orders are:
     - transitivity: :math:`\forall a, b, c \in S, a \leq b \land b \leq c \implies a \leq c`
 
 The "happens-before" relation is *not* a partial order! Considering a set of events, transivity holds and antisymmetry
-holds (vacuously), but events are not reflexive!
+holds (vacuously), but events are not reflexive (it is, however, an *irreflexive partial order*)!
 
 .. note::
     An actual partial order is set containment:
