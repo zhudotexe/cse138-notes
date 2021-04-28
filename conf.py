@@ -18,8 +18,8 @@
 # -- Project information -----------------------------------------------------
 
 project = 'cse138-notes'
-copyright = '2021, Andrew Zhu, Lindsey Kuper'
-author = 'Andrew Zhu, Lindsey Kuper'
+copyright = '2021, Andrew Zhu'
+author = 'Andrew Zhu'
 
 # -- General configuration ---------------------------------------------------
 

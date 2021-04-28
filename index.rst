@@ -17,6 +17,12 @@ Welcome to cse138-notes's documentation!
    safety
    replication
 
+Acknowledgement
+---------------
+These notes are based on `Lindsey Kuiper's class <http://composition.al/CSE138-2021-03/course-overview.html>`_ on
+distributed systems (CSE 138) at UCSC. Lecture recordings can be found
+`here <http://composition.al/CSE138-2021-03/schedule.html>`_.
+
 
 Indices and tables
 ==================
