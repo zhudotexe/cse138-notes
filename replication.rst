@@ -81,3 +81,84 @@ ACK. For CR, the write message is forwarded, and has to be processed by each pro
 .. note::
     Regardless of which replication scheme you choose, the client and replicas have to agree on who's the primary/
     head/tail/etc, or else you lose the guarantees of replication!
+
+Total Order v. Determinism
+--------------------------
+
+Messages sent by different clients at the same time can arrive at different times:
+
+.. image:: _static/replication5.png
+    :width: 500
+
+In the second example, there's no violation of TO delivery, but the result is not the same depending on which client's
+message receives first!
+
+.. data:: determinism
+
+    On every run, the same outcome is achieved.
+
+Bad Things
+----------
+What happens if a client *can* tell that data is replicated (i.e. the replication is not strongly consistent)?
+
+**Read-Your-Writes Violation**: A client's written is not immediately returned on a subsequent read.
+
+.. image:: _static/replication6.png
+    :width: 350
+
+**FIFO Consistency Violation**
+
+.. image:: _static/replication7.png
+    :width: 450
+
+.. data:: fifo consistency
+
+    Writes done by a single process are seen by all processes in the order they were issued
+
+**Causal Consistency Violation**
+
+.. image:: _static/replication8.png
+    :width: 450
+
+.. data:: causal consistency
+
+    Writes that are related by happens-before (i.e. potentially causally related) must be seen in the same causal
+    order by all processes
+
+Consistency
+-----------
+Actually, we can define different **consistency models**:
+
+(aside: a *model* is the set of assumptions you keep in mind when building a system)
+
+.. image:: _static/replication9.png
+    :width: 300
+
+But maintaining stronger consistency requires more work, which means more latency and just being harder! Remember,
+replication/consistency usually involves duplicating messages too, so more bandwidth too
+
+Coordination
+------------
+Going back to our strongly consistent replication protocols (PB/CR) - both of these need some kind of coordinator
+process to know which process is the primary/head/tail/etc.
+
+Chain Replication
+^^^^^^^^^^^^^^^^^
+CR uses the fail-stop fault model (i.e. crashes can occur and be detected by the environment), and requires that not
+all processes crash. There are some ways to implement this (like heartbeating), but sometimes you'll have a false
+positive.
+
+- If the head process crashes, the coordinator makes the next process in line the new head
+- If the tail process crashes, the coordinator makes the preceding process the new tail
+- If a middle processes crashes, it just gets skipped over (although the clients do not have to be notified)
+
+Additionally, when a failure happens, there has to be some handling of writes that are partway through the chain
+when the failure happened - out of the scope of this class though (van Renesse & Schneider, 2004).
+
+.. important::
+    What if the coordinator fails?!?!?! Do we have to replicate the coordinator?
+
+    (Next: Consensus)
+
+
+

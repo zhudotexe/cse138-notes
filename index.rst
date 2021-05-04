@@ -16,6 +16,7 @@ Welcome to cse138-notes's documentation!
    snapshot
    safety
    replication
+   consensus
 
 Acknowledgement
 ---------------
