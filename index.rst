@@ -17,6 +17,7 @@ Welcome to cse138-notes's documentation!
    safety
    replication
    consensus
+   active
 
 Acknowledgement
 ---------------

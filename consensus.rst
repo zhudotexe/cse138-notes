@@ -162,3 +162,74 @@ acceptors (for some *n*)
           milestone: we have consensus on *val* (but no one knows)
 
 Paxos satisfies agreement and validity! What might cause it not to terminate...?
+
+Non-Termination
+^^^^^^^^^^^^^^^
+Paxos can fail to terminate if you have *duelling proposers*:
+
+.. image:: _static/consensus10.png
+    :width: 500
+
+In the above execution, a proposer never receives a majority ``Accepted`` because the other proposer butts in.
+
+So why don't we just always only have one proposer? Theoretically we could just have one process declare itself the
+leader and tell the others what the accepted value it is... but picking the leader requires consensus in itself!
+
+We could, however, choose a different leader election protocol to choose the proposer for a paxos run; and that
+leader election protocol could have different guarantees (e.g. termination and validity, instead of agreement/validity)
+
+Multi-Paxos
+-----------
+Paxos is good for gaining consensus on a *single* value - for multiple (e.g. a sequence of values), you have to
+rerun the whole thing. What if you want to decide on a *sequence* of values?
+
+For example, if you wanted to implement TO delivery (e.g. in a system where 2 messages are sent), you need to agree on
+two values: what message is sent first, and which is second. In normal Paxos, this takes a lot of messages!
+
+What if we (well, the accepted proposer) just kept sending ``Accept`` messages with the same proposal number (i.e. kept
+repeating phase 2)? Turns out, you can keep doing this until your messages start getting ignored (i.e. a higher
+``Prepare`` is received)!
+
+.. image:: _static/consensus11.png
+    :width: 500
+
+And if a second process butts in, Multi-Paxos pretty much just becomes normal Paxos.
+
+.. note::
+    An alternative way to agree on a sequence is *batching* - queuing up multiple values and using normal Paxos to
+    get consensus on a batch at a time.
+
+Paxos: Fault Tolerance
+----------------------
+We can't have just one acceptor, since it can crash.
+
+Acceptors
+^^^^^^^^^
+If we have 3 acceptors, only one can crash and Paxos will still work - you need to hear from both live acceptors.
+
+If you have 5, you can accept 2 crashes. In general, a *minority* of acceptors can crash.
+
+If *f* is the number of acceptor crashes you want to tolerate, you need :math:`2f+1` acceptors.
+
+Proposers
+^^^^^^^^^
+If *f* is the number of proposer crashes you want to tolerate, you need :math:`f+1` proposers.
+
+Omission Faults
+^^^^^^^^^^^^^^^
+Paxos is tolerant to omission faults (given timeouts) - it might not terminate, but that's already not a guarantee,
+so eh. In this scenario, it's *safe* but not *live* - fail-safe.
+
+.. image:: _static/consensus12.png
+    :width: 400
+
+Other Consensus Protocols
+-------------------------
+
+- Raft (Diego Ongaro, John Ousterhout, 2014)
+    - designed to be easier to understand than other protocols
+- Zab (Zookeeper Atomic Broadcast; Yahoo Research, late 2000s)
+- Viewstamped Replication (Brian Oki, Barbara Liskov, 1998)
+
+All of these are for a sequence of values, like Multi-Paxos.
+
