@@ -18,6 +18,7 @@ Welcome to cse138-notes's documentation!
    replication
    consensus
    consistency
+   dynamo
 
 Acknowledgement
 ---------------

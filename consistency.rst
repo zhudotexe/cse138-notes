@@ -106,3 +106,31 @@ This tradeoff is called **CAP**:
     - Partition tolerance
 
     It's impossible to have perfect consistency and availability, because of network partitions.
+
+.. note::
+    If you happen to be reading these notes front-to-back, you should go take a look at Dynamo now.
+
+Quorum Consistency
+------------------
+How many replicas should a client talk to? *Quorum systems* let you configure this.
+
+- N: number of replicas
+- W: "write quorum" - how many replicas have to acknowledge a write operation to be considered complete
+- R: "read quorum" - how many replicas have to have to acknowledge (i.e. respond to) a read operation
+
+Obviously, W <= N and R <= N.
+
+Consider N = 3, W = 3, R = 1 (Read-One-Write-All: ROWA). This doesn't necessarilygive you strong consistency because
+replicas might deliver writes from different clients in different orders. There's other problems too, like a network
+partition or a failed replica blocking all writes! (Also, it's just slow to write.)
+
+The Dynamo paper suggests, for N = 3, R = 2 and W = 2. This is so read and write quorums overlap:
+
+.. image:: _static/consistency8.png
+    :width: 500
+
+In general, if R + W > N, read quorums will intersect with write quorums.
+
+Some database systems (e.g. Cassandra) let you configure these constants. For example, if you wanted super fast
+writes but less guarantee on consistency, you might set W = 1.
+
