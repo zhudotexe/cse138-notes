@@ -20,6 +20,7 @@ Welcome to cse138-notes's documentation!
    consistency
    dynamo
    cyrus
+   mapreduce
 
 Acknowledgement
 ---------------
