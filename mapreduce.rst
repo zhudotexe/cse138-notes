@@ -77,9 +77,9 @@ In MapReduce, many of the algs were conceptually simple - the hard part was runn
 distributed fashion. What if our forward index is too large to fit on one machine? What if the inverted index is?
 
 It turns out for this problem, we can easily parallelize by distributing docs to different machines! Each machine
-can generate a set of *intermediate key-value pairs* and then save them locally without having to do any computation -
-then reducer machines can grab some set of intermediate key-value pairs (e.g. grouped by ``hash(key) % R``) to solve
-them and save them to some file system (e.g. GFS).
+can generate a set of *intermediate key-value pairs* from input key-value pairs and then save them locally without
+having to do any computation - then reducer machines can grab some set of intermediate key-value pairs (e.g. grouped by
+``hash(key) % R``) to solve them and save them to some file system (e.g. GFS).
 
 .. image:: _static/mapreduce1.png
     :width: 500
@@ -104,10 +104,21 @@ Other tasks that MapReduce can do include:
 - word count
 - etc.
 
+TLDR: MapReduce has 3 primary phases:
+
+1. Map: generate a set of intermediate KV pairs from input KV pairs
+2. Shuffle: intermediate KV pairs are sent to reduce workers according to some data partitioning scheme (e.g., but not
+   necessarily, hash(key))
+3. Reduce: takes a key and all of its values (drawn from intermediate KV pairs) and generates some output values
+
 Word Count
 ----------
 Another example: word count - this introduces the concept of a *combiner* function, where each mapper does a little
-bit of the reducing so less data has to be shuffled.
+bit of the reducing so less data has to be shuffled (less bandwidth use). This is ok to do when an operation (e.g.
+addition) is associative!
+
+.. note::
+    An example of a non-associative operation might be some average function.
 
 .. image:: _static/mapreduce3.png
     :width: 500
@@ -123,3 +134,9 @@ This differs to an online system, which might need to scale replicas in response
 If a worker crashes, each task (map, reduce on a subset of data) is deterministic, so a master node can just reassign
 the task to a new worker. (They just redo the task since the intermediate result is stored locally instead of on, say,
 GFS - less overhead that way.)
+
+MapReduce @ Google
+------------------
+MapReduce has limited degrees of freedom - often, you'll need to chain together multiple MR jobs to get the output
+you want. This involves writing to a filesystem between each job - Google uses Flume, which allows MR chaining without
+having to hit GFS each time.

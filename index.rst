@@ -21,6 +21,7 @@ Welcome to cse138-notes's documentation!
    dynamo
    cyrus
    mapreduce
+   math
 
 Acknowledgement
 ---------------
